@@ -10,14 +10,14 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U sso -d sso"]
+      test: [ "CMD-SHELL", "pg_isready -U sso -d sso" ]
       interval: 3s
       timeout: 3s
       retries: 20
 
   migrate:
-    build: .
-    command: ["/app/migrate", "up"]
+    build: ./backend
+    command: [ "/app/migrate", "up" ]
     environment:
       DATABASE_URL: postgres://sso:sso@db:5432/sso?sslmode=disable
     depends_on:
@@ -25,15 +25,24 @@ services:
         condition: service_healthy
 
   sso_api:
-    build: .
+    build: ./backend
     ports:
       - "127.0.0.1:8080:8080"
     environment:
       DATABASE_URL: postgres://sso:sso@db:5432/sso?sslmode=disable
-      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env.backend}
+    env_file:
+      - .env.backend
     depends_on:
       migrate:
         condition: service_completed_successfully
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "127.0.0.1:3000:80"
+    env_file:
+      - .env.frontend
 
 volumes:
   postgres_data:

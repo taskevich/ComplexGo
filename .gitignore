@@ -4,3 +4,9 @@ bin/
 coverage.out
 .vscode
 .idea
+node_modules/
+dist/
+*.local
+.env.*
+!.env.example
+*.log
